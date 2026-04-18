@@ -140,6 +140,231 @@
         },
         "description": "## CONSULTA EXTRA: INGREDIENTES CRÍTICOS (Dashboard Admin)\n\n**Finalidad del Sistema:**\nAdmin puede ver de un vistazo todos los ingredientes que necesitan reabastecimiento. No es solo una alerta, es un reporte para tomar decisiones estratégicas de compra.\n\n**¿Qué hace?**\n- Retorna TODOS los ingredientes con stock ≤ minimo\n- Ordena por criticidad (desde stock = 0 hasta stock = minimo)\n- Permite Admin planificar compras\n- Base para el dashboard KPI\n\n**Caso de Uso:**\nAdmin abre dashboard cada mañana:\n- Ve 3 ingredientes críticos\n- Compra prioridades\n- Evita perder ventas por desabastecimiento\n\n**Headers Requeridos:**\n- `Authorization`: Token JWT (valor: 'active')\n- `X-Usuario-Id`: ID del Admin (valor: 'U002')\n\n**Respuesta Exitosa (200):**\n```json\n[\n  {\n    \"_id\": \"ObjectId\",\n    \"ing_id\": \"I006\",\n    \"nombre\": \"Leche\",\n    \"stock\": 0,\n    \"u_medida\": \"ml\",\n    \"minimo\": 2000\n  },\n  {\n    \"_id\": \"ObjectId\",\n    \"ing_id\": \"I005\",\n    \"nombre\": \"Café en grano\",\n    \"stock\": 480,\n    \"u_medida\": \"g\",\n    \"minimo\": 500\n  },\n  {\n    \"_id\": \"ObjectId\",\n    \"ing_id\": \"I007\",\n    \"nombre\": \"Helado Vainilla\",\n    \"stock\": 450,\n    \"u_medida\": \"g\",\n    \"minimo\": 500\n  }\n]\n```\n\n**Condición de Retorno:**\nSolo ingredientes donde: stock ≤ minimo\n\n**Análisis de Criticidad por Stock:**\n- stock = 0: URGENTE ❌\n- 1 - 100: MÁS URGENTE 🔴\n- 101 - 250: URGENTE 🟠\n- 251 - minimo: NORMAL 🟡\n\n**Impacto en el Negocio:**\n- Si Leche = 0: No se venden Capuccinos (P002)\n- Si Café = 480: No se venden Americanos (P004)\n- Si ambos: Menú se reduce solo a Waffles\n\n**Errores Posibles:**\n- `200 OK`: Ingredientes críticos encontrados (o array vacío si todos están bien)\n  ```json\n  []\n  ```\n- `401 Unauthorized`: Token inválido\n  ```json\n  {\"message\": \"Token inválido\"}\n  ```\n- `403 Forbidden`: Usuario no es Admin\n  ```json\n  {\"message\": \"Solo Administradores pueden ver ingredientes críticos\"}\n  ```\n- `500 Internal Server Error`: Error en servidor\n\n**Validaciones:**\n- ✓ Usuario autenticado\n- ✓ token_jwt válido\n- ✓ rol == 'Administrador'\n- ✓ Retorna expresión: stock ≤ minimo\n- ✓ Ordena por stock ascendente (primero los más críticos)\n\n**Casos de Uso:**\n\n**Caso 1: Reabastecimiento Planificado**\n- Lunes: Admin ve GET /criticos\n- Retorna leche stock=0\n- Admin compra 10L inmediatamente\n- Martes: Admin hace PUT cantidad=10000\n- Menú se reactiva\n\n**Caso 2: Análisis de Ventas**\n- Admin ve que frecuentemente Café llega a crítico\n- Significa producto P004 (Americano) es muy vendido\n- Aumenta compras de café\n- Optimiza KPI de ventas\n\n**Caso 3: Sin Alertas Críticas**\n- GET /ingredientes/criticos\n- Retorna 404 \"Sin ingredientes críticos\"\n- ✓ Stock de todo está bien\n- ✓ Menú completo disponible\n- ✓ Clientes satisfechos\n\n**Diferencia con /api/alertas:**\n- `/api/alertas`: Notificaciones de cambios (automáticas)\n- `/api/ingredientes/criticos`: Reporte visual (manual, solo Admin)\n- Alertas: Avisan cuando baja\n- Críticos: Muestran panorama general\n\n**Flujo en Dashboard Admin:**\n1. Admin entra a dashboard\n2. GET /api/ingredientes/criticos\n3. Ve tabla con ingredientes bajo stock\n4. Click en \"Comprar\" → redirecciona a proveedor o genera orden\n5. Después de compra → PUT /api/ingredientes con cantidad nueva"
       }
+    },
+    {
+      "name": "6. Reporte de Ventas Diarias",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active",
+            "description": "Token JWT del Admin"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002",
+            "description": "ID del usuario Admin"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/ventas/reporte/diario",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "ventas", "reporte", "diario"]
+        },
+        "description": "## CONSULTA 6: REPORTE DE VENTAS DIARIAS\n\n**Finalidad del Sistema:**\nAdmin puede ver el total de ingresos del día actual para llevar el control de caja.\n\n**¿Qué hace?**\n- Retorna total de ventas del día actual (00:00 a 23:59)\n- Calcula cantidad de ventas registradas\n- Calcula promedio por venta\n\n**Caso de Uso:**\nAdmin abre dashboard cada tarde:\n- Ve: \"Hoy ingresaron $54,000 en 12 ventas\"\n- Promedio: $4,500 por venta\n- Usa para control de caja y análisis de desempeño\n\n**Headers Requeridos:**\n- `Authorization`: Token JWT (valor: 'active')\n- `X-Usuario-Id`: ID del Admin (valor: 'U002')\n\n**Respuesta Exitosa (200):**\n```json\n{\n  \"fecha\": \"2026-04-17\",\n  \"totalDia\": 54000,\n  \"cantidadVentas\": 12,\n  \"promedioPorVenta\": 4500\n}\n```\n\n**Si no hay ventas:**\n```json\n{\n  \"fecha\": \"2026-04-17\",\n  \"totalDia\": 0,\n  \"cantidadVentas\": 0,\n  \"promedioPorVenta\": 0\n}\n```\n\n**Errores Posibles:**\n- `200 OK`: Reporte generado (incluso con 0 ventas)\n- `401 Unauthorized`: Token inválido\n  ```json\n  {\"message\": \"Token inválido\"}\n  ```\n- `403 Forbidden`: Usuario no es Admin\n  ```json\n  {\"message\": \"Solo Administradores pueden ver reportes\"}\n  ```\n- `500 Internal Server Error`: Error en servidor"
+      }
+    },
+    {
+      "name": "7. Producto Más Vendido (KPI)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active",
+            "description": "Token JWT del Admin"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002",
+            "description": "ID del usuario Admin"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/productos/kpi/top-vendido",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "productos", "kpi", "top-vendido"]
+        },
+        "description": "## CONSULTA 7: PRODUCTO MÁS VENDIDO (KPI)\n\n**Finalidad del Sistema:**\nAdmin quiere saber cuál es el producto con mayor demanda para optimizar las compras de insumos.\n\n**¿Qué hace?**\n- Retorna el TOP 1 producto más vendido (cantidad total)\n- Incluye información del producto (nombre, precio)\n- Calcula ingreso total generado por ese producto\n\n**Caso de Uso:**\nAdmin analiza:\n- \"Americano es top vendido: 150 unidades\"\n- \"Generó $675,000 en ingresos\"\n- \"Debo comprar más café para soportar demanda\"\n\n**Headers Requeridos:**\n- `Authorization`: Token JWT (valor: 'active')\n- `X-Usuario-Id`: ID del Admin (valor: 'U002')\n\n**Respuesta Exitosa (200):**\n```json\n{\n  \"prod_id\": \"P004\",\n  \"nombre\": \"Americano\",\n  \"precio\": 4500,\n  \"totalVendido\": 150,\n  \"ingresoTotal\": 675000\n}\n```\n\n**Si no hay ventas:**\n```json\nnull\n```\n\n**Errores Posibles:**\n- `200 OK`: KPI generado\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `500 Internal Server Error`: Error en servidor"
+      }
+    },
+    {
+      "name": "8A. Crear Receta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active",
+            "description": "Token JWT del Admin"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002",
+            "description": "ID del usuario Admin"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prod_id\": \"P005\",\n  \"ingredientes\": [\n    {\"ing_id\": \"I003\", \"cantidad\": 50.0},\n    {\"ing_id\": \"I005\", \"cantidad\": 15.0}\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/recetas",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "recetas"]
+        },
+        "description": "## CONSULTA 8A: CREAR RECETA\n\n**Finalidad del Sistema:**\nAdmin crea una nueva receta para un producto.\n\n**Respuesta Exitosa (201 Created):**\n```json\n{\n  \"prod_id\": \"P005\",\n  \"ingredientes\": [\n    {\"ing_id\": \"I003\", \"cantidad\": 50.0},\n    {\"ing_id\": \"I005\", \"cantidad\": 15.0}\n  ]\n}\n```\n\n**Errores Posibles:**\n- `400 Bad Request`: Datos incompletos\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `404 Not Found`: Producto o ingrediente no existe\n- `500 Internal Server Error`: Error en servidor"
+      }
+    },
+    {
+      "name": "8B. Obtener Recetas",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/recetas",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "recetas"]
+        },
+        "description": "## CONSULTA 8B: OBTENER TODAS LAS RECETAS\n\n**Respuesta Exitosa (200):**\n```json\n[\n  {\"prod_id\": \"P001\", \"ingredientes\": [...]},\n  {\"prod_id\": \"P002\", \"ingredientes\": [...]}\n]\n```"
+      }
+    },
+    {
+      "name": "8C. Actualizar Receta",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"ingredientes\": [\n    {\"ing_id\": \"I003\", \"cantidad\": 60.0},\n    {\"ing_id\": \"I005\", \"cantidad\": 12.0}\n  ]\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/recetas/P005",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "recetas", "P005"]
+        },
+        "description": "## CONSULTA 8C: ACTUALIZAR RECETA\n\n**¿Qué hace?**\n- Actualiza los ingredientes de una receta existente\n- Ejemplo: Cambiar cantidad de harina en Waffle\n\n**Respuesta Exitosa (200):**\n```json\n{\n  \"prod_id\": \"P005\",\n  \"ingredientes\": [\n    {\"ing_id\": \"I003\", \"cantidad\": 60.0},\n    {\"ing_id\": \"I005\", \"cantidad\": 12.0}\n  ]\n}\n```"
+      }
+    },
+    {
+      "name": "8D. Eliminar Receta",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/recetas/P005",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "recetas", "P005"]
+        },
+        "description": "## CONSULTA 8D: ELIMINAR RECETA\n\n**Respuesta Exitosa (204 No Content):**\nSin body\n\n**Errores Posibles:**\n- `404 Not Found`: Receta no existe\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin"
+      }
+    },
+    {
+      "name": "9. Menú Filtrado por Categoría",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/productos/menu?categoria=Bebida",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "productos", "menu"],
+          "query": [
+            {
+              "key": "categoria",
+              "value": "Bebida"
+            }
+          ]
+        },
+        "description": "## CONSULTA 9: FILTRADO DE MENÚ POR CATEGORÍA\n\n**Finalidad del Sistema:**\nCliente filtra el menú por tipo de producto para encontrar rápidamente su café favorito.\n\n**¿Qué hace?**\n- Retorna solo productos disponibles de la categoría especificada\n- Categorías: \"Bebida\", \"Comida\", etc.\n- Sin autenticación (cliente puede acceder)\n\n**Caso de Uso:**\nCliente:\n- Abre app\n- Filtra por \"Bebida\"\n- Ve solo cafés, capuccinos, americanos\n- Elige \"Americano\" y compra\n\n**Query Parameters:**\n- `categoria` (String, requerido): Categoría a filtrar\n\n**Respuesta Exitosa (200):**\n```json\n[\n  {\n    \"_id\": \"ObjectId\",\n    \"prod_id\": \"P002\",\n    \"nombre\": \"Capuccino\",\n    \"categoria\": \"Bebida\",\n    \"precio\": 5000,\n    \"disponible\": true\n  },\n  {\n    \"_id\": \"ObjectId\",\n    \"prod_id\": \"P004\",\n    \"nombre\": \"Americano\",\n    \"categoria\": \"Bebida\",\n    \"precio\": 4500,\n    \"disponible\": true\n  }\n]\n```\n\n**Si no hay productos en categoría:**\n```json\n[]\n```\n\n**Errores Posibles:**\n- `200 OK`: Productos encontrados (o array vacío)\n- `500 Internal Server Error`: Error en servidor"
+      }
+    },
+    {
+      "name": "10. Historial de Alertas",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/alertas/historial/todas?visto=false&limit=10&offset=0",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "alertas", "historial", "todas"],
+          "query": [
+            {
+              "key": "visto",
+              "value": "false"
+            },
+            {
+              "key": "limit",
+              "value": "10"
+            },
+            {
+              "key": "offset",
+              "value": "0"
+            }
+          ]
+        },
+        "description": "## CONSULTA 10: HISTORIAL DE ALERTAS DE STOCK\n\n**Finalidad del Sistema:**\nAdmin quiere consultar las alertas registradas para analizar la frecuencia de desabastecimiento de insumos.\n\n**¿Qué hace?**\n- Retorna todas las alertas (o filtradas por visto)\n- Ordena por fecha descendente (más nuevas primero)\n- Soporta paginación (limit, offset)\n\n**Caso de Uso:**\nAdmin analiza:\n- \"¿Cuántas veces en los últimos días se acabó el café?\"\n- \"¿Qué ingredientes son problemáticos?\"\n- Usa para optimizar política de compras\n\n**Query Parameters (Opcionales):**\n- `visto` (Boolean): true/false para filtrar alertas vistas/no vistas\n- `limit` (Number): Cantidad de registros (default: 50)\n- `offset` (Number): Para paginación (default: 0)\n\n**Respuesta Exitosa (200):**\n```json\n[\n  {\n    \"_id\": \"ObjectId\",\n    \"alert_id\": \"A1712878234123\",\n    \"ing_id\": \"I005\",\n    \"nivel\": \"Bajo\",\n    \"msj\": \"Stock crítico: Café en grano (480g)\",\n    \"fecha\": \"2026-04-17T10:30:00.000Z\",\n    \"visto\": false\n  },\n  {\n    \"_id\": \"ObjectId\",\n    \"alert_id\": \"A1712876123456\",\n    \"ing_id\": \"I006\",\n    \"nivel\": \"Agotado\",\n    \"msj\": \"Stock crítico: Leche (0ml)\",\n    \"fecha\": \"2026-04-17T09:15:00.000Z\",\n    \"visto\": true\n  }\n]\n```\n\n**Si no hay alertas:**\n```json\n[]\n```\n\n**Errores Posibles:**\n- `200 OK`: Historial con alertas (o array vacío)\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `500 Internal Server Error`: Error en servidor"
+      }
     }
   ],
   "variable": [

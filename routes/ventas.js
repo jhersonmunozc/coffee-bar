@@ -12,4 +12,12 @@ router.post(
   ventasController.registrarVenta
 )
 
+// Reporte de Ventas Diarias - Consulta 6
+router.get(
+  '/reporte/diario',
+  autenticacionService.verificarToken,
+  autenticacionService.verifyAdmin,
+  ventasController.obtenerVentasDiarias
+)
+
 module.exports = router

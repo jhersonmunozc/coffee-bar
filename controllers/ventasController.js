@@ -20,6 +20,14 @@ const ventasController = {
         const statusCode = err.statusCode || 500
         res.status(statusCode).json({ message: err.message })
       })
+  },
+
+  obtenerVentasDiarias: function (req, res) {
+    ventaService.obtenerVentasDiarias()
+      .then(resultado => {
+        res.status(200).json(resultado)
+      })
+      .catch(err => res.status(500).json({ message: `Error: ${err.message}` }))
   }
 }
 

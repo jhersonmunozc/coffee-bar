@@ -12,4 +12,12 @@ router.get(
   alertasController.obtenerAlertas
 )
 
+// Historial de Alertas de Stock - Consulta 10
+router.get(
+  '/historial/todas',
+  autenticacionService.verificarToken,
+  autenticacionService.verifyAdmin,
+  alertasController.obtenerHistorialAlertas
+)
+
 module.exports = router

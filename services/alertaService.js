@@ -28,6 +28,20 @@ const alertaService = {
       { visto: true },
       { returnDocument: 'after' }
     ).exec()
+  },
+
+  obtenerHistorialAlertas: function (visto, limit = 50, offset = 0) {
+    let query = {}
+    
+    if (visto !== undefined && visto !== null) {
+      query.visto = visto === 'true' || visto === true
+    }
+
+    return Alerta.find(query)
+      .sort({ fecha: -1 })
+      .limit(limit)
+      .skip(offset)
+      .exec()
   }
 }
 

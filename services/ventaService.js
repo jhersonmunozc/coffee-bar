@@ -59,6 +59,47 @@ const ventaService = {
     } catch (err) {
       throw err
     }
+  },
+
+  obtenerVentasDiarias: async function () {
+    try {
+      const hoy = new Date()
+      hoy.setHours(0, 0, 0, 0)
+      const manana = new Date(hoy)
+      manana.setDate(manana.getDate() + 1)
+
+      const resultado = await Venta.aggregate([
+        {
+          $match: {
+            fecha: { $gte: hoy, $lt: manana }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            totalDia: { $sum: '$total' },
+            cantidadVentas: { $sum: 1 },
+            promedioPorVenta: { $avg: '$total' }
+          }
+        }
+      ]).exec()
+
+      if (resultado.length === 0) {
+        return {
+          fecha: hoy.toISOString().split('T')[0],
+          totalDia: 0,
+          cantidadVentas: 0,
+          promedioPorVenta: 0
+        }
+      }
+
+      return {
+        fecha: hoy.toISOString().split('T')[0],
+        ...resultado[0]
+      }
+    } catch (err) {
+      throw err
+    }
   }
 }
 
