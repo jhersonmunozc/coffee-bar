@@ -1,8 +1,8 @@
 {
   "info": {
     "_postman_id": "cafesino-api-v2-2026",
-    "name": "Cafésino - Sistema de Sincronización de Inventario (10/10 Funcionalidades)",
-    "description": "Colección completa de API REST - Todas las funcionalidades implementadas (v2.0 con CRUD Recetas + KPIs + Filtros)",
+    "name": "Cafésino - Sistema de Sincronización de Inventario (15 Endpoints)",
+    "description": "Colección completa API REST - 10 Funcionalidades + CRUD Productos + CRUD Recetas + KPIs (v3.0 - Feature Completo)",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
