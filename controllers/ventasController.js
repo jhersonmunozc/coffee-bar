@@ -10,7 +10,12 @@ const ventasController = {
     }
 
     ventaService.registrarVenta(venta_id, baristaId, productos, total)
-      .then(venta => res.status(200).json(venta))
+      .then(resultado => {
+        res.status(200).json({
+          venta: resultado.venta,
+          alertas_generadas: resultado.alertas
+        })
+      })
       .catch(err => res.status(400).json({ message: err.message }))
   }
 }

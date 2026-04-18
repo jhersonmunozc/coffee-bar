@@ -29,6 +29,9 @@ const ventaService = {
       venta.productos = productos
       venta.total = total
 
+      // Array para coleccionar alertas generadas
+      const alertasGeneradas = []
+
       // Descontar ingredientes y crear alertas
       for (let prod of productos) {
         const receta = await Receta.findOne({ prod_id: prod.prod_id }).exec()
@@ -39,12 +42,20 @@ const ventaService = {
           // Crear alerta si stock es crítico
           const ingrediente = await Ingrediente.findOne({ ing_id: ing.ing_id }).exec()
           if (ingrediente.stock <= ingrediente.minimo) {
-            await alertaService.crearAlerta(ing.ing_id)
+            const alerta = await alertaService.crearAlerta(ing.ing_id)
+            alertasGeneradas.push(alerta)
           }
         }
       }
 
-      return venta.save()
+      // Guardar venta
+      const ventaGuardada = await venta.save()
+
+      // Retornar venta y alertas generadas
+      return {
+        venta: ventaGuardada,
+        alertas: alertasGeneradas
+      }
     } catch (err) {
       throw err
     }
