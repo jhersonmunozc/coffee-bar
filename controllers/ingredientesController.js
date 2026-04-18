@@ -10,21 +10,18 @@ const ingredientesController = {
 
     inventarioService.agregarStock(ing_id, cantidad)
       .then(ingrediente => {
-        if (!ingrediente) {
-          return res.status(404).json({ message: 'Ingrediente no encontrado' })
-        }
-        return res.status(200).json(ingrediente)
+        res.status(200).json(ingrediente)
       })
-      .catch(err => res.status(500).json({ message: `Error: ${err.message}` }))
+      .catch(err => {
+        const statusCode = err.statusCode || 500
+        res.status(statusCode).json({ message: err.message })
+      })
   },
 
   obtenerIngredientesCriticos: function (req, res) {
     inventarioService.obtenerIngredientesCriticos()
       .then(ingredientes => {
-        if (!ingredientes || ingredientes.length === 0) {
-          return res.status(404).json({ message: 'Sin ingredientes críticos' })
-        }
-        return res.status(200).json(ingredientes)
+        res.status(200).json(ingredientes || [])
       })
       .catch(err => res.status(500).json({ message: `Error: ${err.message}` }))
   }
