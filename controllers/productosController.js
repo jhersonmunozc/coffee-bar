@@ -85,7 +85,7 @@ const productosController = {
 
     productoService.eliminarProducto(prod_id)
       .then(producto => {
-        res.status(204).send()
+        res.status(200).json({ message: 'Producto eliminado exitosamente' })
       })
       .catch(err => {
         const statusCode = err.statusCode || 500

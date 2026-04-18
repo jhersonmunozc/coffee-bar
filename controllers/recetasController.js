@@ -62,7 +62,7 @@ const recetasController = {
 
     recetaService.eliminarReceta(prod_id)
       .then(receta => {
-        res.status(204).send()
+        res.status(200).json({ message: 'Receta eliminada exitosamente' })
       })
       .catch(err => {
         const statusCode = err.statusCode || 500
