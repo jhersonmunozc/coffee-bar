@@ -4,17 +4,52 @@ const autenticacionService = require('../services/autenticacionService')
 
 const router = Router()
 
-// Actualización de Stock - Consulta 5
-router.put(
+// CRUD Ingredientes
+router.post(
   '/',
+  autenticacionService.verificarToken,
+  autenticacionService.verifyAdmin,
+  ingredientesController.crearIngrediente
+)
+
+router.get(
+  '/',
+  autenticacionService.verificarToken,
+  autenticacionService.verifyAdmin,
+  ingredientesController.obtenerIngredientes
+)
+
+router.get(
+  '/:ing_id',
+  autenticacionService.verificarToken,
+  autenticacionService.verifyAdmin,
+  ingredientesController.obtenerIngredientePorId
+)
+
+router.put(
+  '/:ing_id',
+  autenticacionService.verificarToken,
+  autenticacionService.verifyAdmin,
+  ingredientesController.actualizarIngrediente
+)
+
+router.delete(
+  '/:ing_id',
+  autenticacionService.verificarToken,
+  autenticacionService.verifyAdmin,
+  ingredientesController.eliminarIngrediente
+)
+
+// Endpoints adicionales de inventario
+router.put(
+  '/actualizar/stock',
   autenticacionService.verificarToken,
   autenticacionService.verifyAdmin,
   ingredientesController.actualizarStock
 )
 
-// Ingredientes Críticos para Admin
 router.get(
-  '/criticos',
+  '/listado/criticos',
   autenticacionService.verificarToken,
   autenticacionService.verifyAdmin,
   ingredientesController.obtenerIngredientesCriticos
