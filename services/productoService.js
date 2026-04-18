@@ -74,6 +74,125 @@ const productoService = {
     } catch (err) {
       throw err
     }
+  },
+
+  crearProducto: async function (prodId, nombre, categoria, precio) {
+    try {
+      if (!prodId || !nombre || !categoria || precio === undefined) {
+        const err = new Error('Datos incompletos')
+        err.statusCode = 400
+        throw err
+      }
+
+      if (precio <= 0) {
+        const err = new Error('Precio debe ser mayor a 0')
+        err.statusCode = 400
+        throw err
+      }
+
+      // Verificar que prod_id no exista
+      const existente = await Producto.findOne({ prod_id: prodId }).exec()
+      if (existente) {
+        const err = new Error('Producto con este ID ya existe')
+        err.statusCode = 409
+        throw err
+      }
+
+      const producto = new Producto()
+      producto.prod_id = prodId
+      producto.nombre = nombre
+      producto.categoria = categoria
+      producto.precio = precio
+      producto.disponible = true
+
+      return await producto.save()
+    } catch (err) {
+      throw err
+    }
+  },
+
+  obtenerProductos: function () {
+    return Producto.find().exec()
+  },
+
+  obtenerProductoPorId: async function (prodId) {
+    try {
+      const producto = await Producto.findOne({ prod_id: prodId }).exec()
+      
+      if (!producto) {
+        const err = new Error('Producto no encontrado')
+        err.statusCode = 404
+        throw err
+      }
+
+      return producto
+    } catch (err) {
+      throw err
+    }
+  },
+
+  actualizarProducto: async function (prodId, datos) {
+    try {
+      if (!datos || Object.keys(datos).length === 0) {
+        const err = new Error('Debe proporcionar al menos un dato para actualizar')
+        err.statusCode = 400
+        throw err
+      }
+
+      // Validar que no cambien campos sensibles
+      if (datos.prod_id) {
+        const err = new Error('No se puede modificar el producto ID')
+        err.statusCode = 400
+        throw err
+      }
+
+      // Validar precio si se proporciona
+      if (datos.precio !== undefined && datos.precio <= 0) {
+        const err = new Error('Precio debe ser mayor a 0')
+        err.statusCode = 400
+        throw err
+      }
+
+      const producto = await Producto.findOneAndUpdate(
+        { prod_id: prodId },
+        datos,
+        { returnDocument: 'after' }
+      ).exec()
+
+      if (!producto) {
+        const err = new Error('Producto no encontrado')
+        err.statusCode = 404
+        throw err
+      }
+
+      return producto
+    } catch (err) {
+      throw err
+    }
+  },
+
+  eliminarProducto: async function (prodId) {
+    try {
+      // Verificar que no haya receta asociada
+      const receta = await Receta.findOne({ prod_id: prodId }).exec()
+      if (receta) {
+        const err = new Error('No se puede eliminar producto con receta existente')
+        err.statusCode = 409
+        throw err
+      }
+
+      const producto = await Producto.findOneAndDelete({ prod_id: prodId }).exec()
+
+      if (!producto) {
+        const err = new Error('Producto no encontrado')
+        err.statusCode = 404
+        throw err
+      }
+
+      return producto
+    } catch (err) {
+      throw err
+    }
   }
 }
 

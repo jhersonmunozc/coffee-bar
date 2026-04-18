@@ -30,6 +30,67 @@ const productosController = {
         res.status(200).json(producto)
       })
       .catch(err => res.status(500).json({ message: `Error: ${err.message}` }))
+  },
+
+  crearProducto: function (req, res) {
+    const { prod_id, nombre, categoria, precio } = req.body
+
+    productoService.crearProducto(prod_id, nombre, categoria, precio)
+      .then(producto => {
+        res.status(201).json(producto)
+      })
+      .catch(err => {
+        const statusCode = err.statusCode || 500
+        res.status(statusCode).json({ message: err.message })
+      })
+  },
+
+  obtenerProductos: function (req, res) {
+    productoService.obtenerProductos()
+      .then(productos => {
+        res.status(200).json(productos || [])
+      })
+      .catch(err => res.status(500).json({ message: `Error: ${err.message}` }))
+  },
+
+  obtenerProductoPorId: function (req, res) {
+    const { prod_id } = req.params
+
+    productoService.obtenerProductoPorId(prod_id)
+      .then(producto => {
+        res.status(200).json(producto)
+      })
+      .catch(err => {
+        const statusCode = err.statusCode || 500
+        res.status(statusCode).json({ message: err.message })
+      })
+  },
+
+  actualizarProducto: function (req, res) {
+    const { prod_id } = req.params
+    const datos = req.body
+
+    productoService.actualizarProducto(prod_id, datos)
+      .then(producto => {
+        res.status(200).json(producto)
+      })
+      .catch(err => {
+        const statusCode = err.statusCode || 500
+        res.status(statusCode).json({ message: err.message })
+      })
+  },
+
+  eliminarProducto: function (req, res) {
+    const { prod_id } = req.params
+
+    productoService.eliminarProducto(prod_id)
+      .then(producto => {
+        res.status(204).send()
+      })
+      .catch(err => {
+        const statusCode = err.statusCode || 500
+        res.status(statusCode).json({ message: err.message })
+      })
   }
 }
 

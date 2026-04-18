@@ -365,6 +365,142 @@
         },
         "description": "## CONSULTA 10: HISTORIAL DE ALERTAS DE STOCK\n\n**Finalidad del Sistema:**\nAdmin quiere consultar las alertas registradas para analizar la frecuencia de desabastecimiento de insumos.\n\n**¿Qué hace?**\n- Retorna todas las alertas (o filtradas por visto)\n- Ordena por fecha descendente (más nuevas primero)\n- Soporta paginación (limit, offset)\n\n**Caso de Uso:**\nAdmin analiza:\n- \"¿Cuántas veces en los últimos días se acabó el café?\"\n- \"¿Qué ingredientes son problemáticos?\"\n- Usa para optimizar política de compras\n\n**Query Parameters (Opcionales):**\n- `visto` (Boolean): true/false para filtrar alertas vistas/no vistas\n- `limit` (Number): Cantidad de registros (default: 50)\n- `offset` (Number): Para paginación (default: 0)\n\n**Respuesta Exitosa (200):**\n```json\n[\n  {\n    \"_id\": \"ObjectId\",\n    \"alert_id\": \"A1712878234123\",\n    \"ing_id\": \"I005\",\n    \"nivel\": \"Bajo\",\n    \"msj\": \"Stock crítico: Café en grano (480g)\",\n    \"fecha\": \"2026-04-17T10:30:00.000Z\",\n    \"visto\": false\n  },\n  {\n    \"_id\": \"ObjectId\",\n    \"alert_id\": \"A1712876123456\",\n    \"ing_id\": \"I006\",\n    \"nivel\": \"Agotado\",\n    \"msj\": \"Stock crítico: Leche (0ml)\",\n    \"fecha\": \"2026-04-17T09:15:00.000Z\",\n    \"visto\": true\n  }\n]\n```\n\n**Si no hay alertas:**\n```json\n[]\n```\n\n**Errores Posibles:**\n- `200 OK`: Historial con alertas (o array vacío)\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `500 Internal Server Error`: Error en servidor"
       }
+    },
+    {
+      "name": "ADMIN: Crear Producto",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prod_id\": \"P010\",\n  \"nombre\": \"Expreso Doble\",\n  \"categoria\": \"Bebida\",\n  \"precio\": 6000\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/productos",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "productos"]
+        },
+        "description": "## CRUD: CREAR PRODUCTO\n\n**Finalidad:**\nAdmin crea un nuevo producto en el sistema.\n\n**Body Requerido:**\n- `prod_id` (String): ID único del producto\n- `nombre` (String): Nombre del producto\n- `categoria` (String): Categoría (Bebida, Comida, etc.)\n- `precio` (Number): Precio del producto (> 0)\n\n**Respuesta Exitosa (201 Created):**\n```json\n{\n  \"_id\": \"ObjectId\",\n  \"prod_id\": \"P010\",\n  \"nombre\": \"Expreso Doble\",\n  \"categoria\": \"Bebida\",\n  \"precio\": 6000,\n  \"disponible\": true\n}\n```\n\n**Errores Posibles:**\n- `400 Bad Request`: Datos incompletos o precio <= 0\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `409 Conflict`: prod_id ya existe\n- `500 Internal Server Error`: Error en servidor"
+      }
+    },
+    {
+      "name": "ADMIN: Listar Todos los Productos",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/productos",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "productos"]
+        },
+        "description": "## CRUD: OBTENER TODOS LOS PRODUCTOS\n\n**Finalidad:**\nAdmin ve todos los productos (disponibles e indisponibles).\n\n**Respuesta Exitosa (200):**\n```json\n[\n  {\n    \"_id\": \"ObjectId\",\n    \"prod_id\": \"P001\",\n    \"nombre\": \"Waffle Tradicional\",\n    \"categoria\": \"Comida\",\n    \"precio\": 12000,\n    \"disponible\": true\n  },\n  {...},\n  {...}\n]\n```\n\n**Diferencia con GET /menu:**\n- `/menu`: Solo disponibles, sin autenticación (Cliente)\n- `/productos`: Todos, solo Admin, para gestión administrativa"
+      }
+    },
+    {
+      "name": "ADMIN: Obtener Producto por ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/productos/P001",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "productos", "P001"]
+        },
+        "description": "## CRUD: OBTENER UN PRODUCTO\n\n**Finalidad:**\nAdmin obtiene detalles específicos de un producto.\n\n**URL Parameter:**\n- `prod_id`: ID del producto (ej: P001)\n\n**Respuesta Exitosa (200):**\n```json\n{\n  \"_id\": \"ObjectId\",\n  \"prod_id\": \"P001\",\n  \"nombre\": \"Waffle Tradicional\",\n  \"categoria\": \"Comida\",\n  \"precio\": 12000,\n  \"disponible\": true\n}\n```\n\n**Errores Posibles:**\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `404 Not Found`: Producto no existe\n- `500 Internal Server Error`: Error en servidor"
+      }
+    },
+    {
+      "name": "ADMIN: Actualizar Producto",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\": \"Waffle Especial\",\n  \"precio\": 13000,\n  \"disponible\": false\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/productos/P001",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "productos", "P001"]
+        },
+        "description": "## CRUD: ACTUALIZAR PRODUCTO\n\n**Finalidad:**\nAdmin modifica información del producto (nombre, precio, disponibilidad).\n\n**URL Parameter:**\n- `prod_id`: ID del producto (ej: P001)\n\n**Body (Opcional - al menos un campo):**\n- `nombre`: Nuevo nombre\n- `categoria`: Nueva categoría\n- `precio`: Nuevo precio (> 0)\n- `disponible`: true/false\n\n**NO se puede modificar:**\n- `prod_id`: ID del producto (inmutable)\n\n**Respuesta Exitosa (200):**\n```json\n{\n  \"_id\": \"ObjectId\",\n  \"prod_id\": \"P001\",\n  \"nombre\": \"Waffle Especial\",\n  \"categoria\": \"Comida\",\n  \"precio\": 13000,\n  \"disponible\": false\n}\n```\n\n**Errores Posibles:**\n- `400 Bad Request`: Datos vacíos o precio <= 0\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `404 Not Found`: Producto no existe\n- `500 Internal Server Error`: Error en servidor"
+      }
+    },
+    {
+      "name": "ADMIN: Eliminar Producto",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "active"
+          },
+          {
+            "key": "X-Usuario-Id",
+            "value": "U002"
+          }
+        ],
+        "url": {
+          "raw": "http://localhost:3000/api/productos/P010",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["api", "productos", "P010"]
+        },
+        "description": "## CRUD: ELIMINAR PRODUCTO\n\n**Finalidad:**\nAdmin elimina un producto del sistema.\n\n**URL Parameter:**\n- `prod_id`: ID del producto (ej: P010)\n\n**Restricción Importante:**\nNo se puede eliminar un producto que tenga una receta asociada.\n\n**Respuesta Exitosa (204 No Content):**\nSin body\n\n**Errores Posibles:**\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `404 Not Found`: Producto no existe\n- `409 Conflict`: Producto tiene receta asociada (no se puede eliminar)\n- `500 Internal Server Error`: Error en servidor\n\n**Flujo Correcto:**\n1. DELETE receta del producto (DELETE /api/recetas/:prod_id)\n2. DELETE producto (DELETE /api/productos/:prod_id)"
+      }
     }
   ],
   "variable": [
