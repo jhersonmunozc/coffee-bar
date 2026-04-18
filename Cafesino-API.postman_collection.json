@@ -809,6 +809,147 @@
           }
         }
       ]
+    },
+    {
+      "name": "CRUD Usuarios",
+      "item": [
+        {
+          "name": "ADMIN: CRUD Usuarios A - Crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "active"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "U002"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario_id\": \"U003\",\n  \"nombre\": \"Carlos Pérez\",\n  \"rol\": \"Barista\",\n  \"email\": \"carlos@cafesino.com\",\n  \"token_jwt\": \"token_carlos_2026\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/usuarios",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "usuarios"]
+            },
+            "description": "## CRUD: CREAR USUARIO\n\n**Finalidad:**\nAdmin crea un nuevo usuario en el sistema.\n\n**Body Requerido:**\n- `usuario_id` (String): ID único del usuario (ej: U003)\n- `nombre` (String): Nombre completo\n- `rol` (String): \"Barista\" o \"Administrador\"\n- `email` (String): Email del usuario\n- `token_jwt` (String): Token JWT para autenticación\n\n**Respuesta Exitosa (201 Created):**\n```json\n{\n  \"_id\": \"ObjectId\",\n  \"usuario_id\": \"U003\",\n  \"nombre\": \"Carlos Pérez\",\n  \"rol\": \"Barista\",\n  \"email\": \"carlos@cafesino.com\",\n  \"token_jwt\": \"token_carlos_2026\"\n}\n```\n\n**Errores Posibles:**\n- `400 Bad Request`: Datos incompletos o rol inválido\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `409 Conflict`: usuario_id ya existe\n- `500 Internal Server Error`: Error en servidor"
+          }
+        },
+        {
+          "name": "ADMIN: CRUD Usuarios B - Obtener Todos",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "active"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "U002"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/usuarios",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "usuarios"]
+            },
+            "description": "## CRUD: OBTENER TODOS LOS USUARIOS\n\n**Finalidad:**\nAdmin ve todos los usuarios registrados en el sistema.\n\n**Respuesta Exitosa (200):**\n```json\n[\n  {\n    \"_id\": \"ObjectId\",\n    \"usuario_id\": \"U001\",\n    \"nombre\": \"Juan Barista\",\n    \"rol\": \"Barista\",\n    \"email\": \"juan@cafesino.com\",\n    \"token_jwt\": \"token_juan_2026\"\n  },\n  {\n    \"_id\": \"ObjectId\",\n    \"usuario_id\": \"U002\",\n    \"nombre\": \"Admin User\",\n    \"rol\": \"Administrador\",\n    \"email\": \"admin@cafesino.com\",\n    \"token_jwt\": \"active\"\n  }\n]\n```\n\n**Errores Posibles:**\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `500 Internal Server Error`: Error en servidor"
+          }
+        },
+        {
+          "name": "ADMIN: CRUD Usuarios C - Obtener por ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "active"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "U002"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/usuarios/U001",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "usuarios", "U001"]
+            },
+            "description": "## CRUD: OBTENER UN USUARIO\n\n**Finalidad:**\nAdmin obtiene detalles específicos de un usuario.\n\n**URL Parameter:**\n- `usuario_id`: ID del usuario (ej: U001)\n\n**Respuesta Exitosa (200):**\n```json\n{\n  \"_id\": \"ObjectId\",\n  \"usuario_id\": \"U001\",\n  \"nombre\": \"Juan Barista\",\n  \"rol\": \"Barista\",\n  \"email\": \"juan@cafesino.com\",\n  \"token_jwt\": \"token_juan_2026\"\n}\n```\n\n**Errores Posibles:**\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `404 Not Found`: Usuario no existe\n- `500 Internal Server Error`: Error en servidor"
+          }
+        },
+        {
+          "name": "ADMIN: CRUD Usuarios D - Actualizar",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "active"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "U002"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan Martinez\",\n  \"email\": \"juan.martinez@cafesino.com\"\n}"
+            },
+            "url": {
+              "raw": "http://localhost:3000/api/usuarios/U001",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "usuarios", "U001"]
+            },
+            "description": "## CRUD: ACTUALIZAR USUARIO\n\n**Finalidad:**\nAdmin modifica información del usuario.\n\n**URL Parameter:**\n- `usuario_id`: ID del usuario (ej: U001)\n\n**Body (Opcional - al menos un campo):**\n- `nombre`: Nuevo nombre\n- `rol`: Nuevo rol (\"Barista\" o \"Administrador\")\n- `email`: Nuevo email\n- `token_jwt`: Nuevo token\n\n**NO se puede modificar:**\n- `usuario_id`: ID del usuario (inmutable)\n\n**Respuesta Exitosa (200):**\n```json\n{\n  \"_id\": \"ObjectId\",\n  \"usuario_id\": \"U001\",\n  \"nombre\": \"Juan Martinez\",\n  \"rol\": \"Barista\",\n  \"email\": \"juan.martinez@cafesino.com\",\n  \"token_jwt\": \"token_juan_2026\"\n}\n```\n\n**Errores Posibles:**\n- `400 Bad Request`: Datos vacíos o rol inválido\n- `401 Unauthorized`: Token inválido\n- `403 Forbidden`: Usuario no es Admin\n- `404 Not Found`: Usuario no existe\n- `500 Internal Server Error`: Error en servidor"
+          }
+        },
+        {
+          "name": "ADMIN: CRUD Usuarios E - Eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "active"
+              },
+              {
+                "key": "X-Usuario-Id",
+                "value": "U002"
+              }
+            ],
+            "url": {
+              "raw": "http://localhost:3000/api/usuarios/U003",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "usuarios", "U003"]
+            },
+            "description": "## CRUD: ELIMINAR USUARIO\n\n**Finalidad:**\nAdmin elimina un usuario del sistema.\n\n**URL Parameter:**\n- `usuario_id`: ID del usuario (ej: U003)\n\n**Restricción Importante:**\nNo se puede eliminar un usuario que tiene ventas registradas. Solo se pueden eliminar usuarios sin historial.\n\n**Respuesta Exitosa (200):**\n```json\n{\n  \"message\": \"Usuario eliminado exitosamente\"\n}\n```\n\n**Errores Posibles:**\n- `401 Unauthorized`: Token inválido\n  ```json\n  {\"message\": \"Token inválido\"}\n  ```\n- `403 Forbidden`: Usuario no es Admin\n  ```json\n  {\"message\": \"Solo Administradores pueden eliminar usuarios\"}\n  ```\n- `404 Not Found`: Usuario no existe\n  ```json\n  {\"message\": \"Usuario no encontrado\"}\n  ```\n- `500 Internal Server Error`: Error en servidor"
+          }
+        }
+      ]
     }
   ],
   "variable": [

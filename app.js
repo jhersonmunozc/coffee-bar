@@ -15,11 +15,13 @@ const ventasRoutes = require('./routes/ventas')
 const alertasRoutes = require('./routes/alertas')
 const ingredientesRoutes = require('./routes/ingredientes')
 const recetasRoutes = require('./routes/recetas')
+const usuariosRoutes = require('./routes/usuarios')
 
 app.use('/api/productos', productosRoutes)
 app.use('/api/ventas', ventasRoutes)
 app.use('/api/alertas', alertasRoutes)
 app.use('/api/ingredientes', ingredientesRoutes)
 app.use('/api/recetas', recetasRoutes)
+app.use('/api/usuarios', usuariosRoutes)
 
 module.exports = app
