@@ -1,16 +1,14 @@
+const bcrypt = require('bcrypt')
 const Usuario = require('../models/usuario')
+require('dotenv').config()
 
 const usuarioService = {
-  validarUsuario: function (usuarioId, token) {
-    return Usuario.findOne({ usuario_id: usuarioId, token_jwt: token }).exec()
-  },
-
   verificarRol: function (usuario, rolRequired) {
     return usuario && usuario.rol === rolRequired
   },
 
-  crearUsuario: function (usuario_id, nombre, rol, email, token_jwt) {
-    if (!usuario_id || !nombre || !rol || !email || !token_jwt) {
+  crearUsuario: function (usuario_id, nombre, rol, email, password) {
+    if (!usuario_id || !nombre || !rol || !email || !password) {
       const err = new Error('Datos incompletos')
       err.statusCode = 400
       throw err
@@ -20,14 +18,23 @@ const usuarioService = {
       err.statusCode = 400
       throw err
     }
-    const usuario = new Usuario({
-      usuario_id,
-      nombre,
-      rol,
-      email,
-      token_jwt
-    })
-    return usuario.save()
+    if (password.length < 6) {
+      const err = new Error('La contraseña debe tener al menos 6 caracteres')
+      err.statusCode = 400
+      throw err
+    }
+
+    return bcrypt.hash(password, parseInt(process.env.BCRYPT_ROUNDS || 10))
+      .then(passwordHasheada => {
+        const usuario = new Usuario({
+          usuario_id,
+          nombre,
+          rol,
+          email,
+          password: passwordHasheada
+        })
+        return usuario.save()
+      })
   },
 
   obtenerUsuarios: function () {
@@ -57,6 +64,33 @@ const usuarioService = {
       err.statusCode = 400
       throw err
     }
+    
+    // Si se actualiza contraseña, hashearla
+    if (datos.password) {
+      if (datos.password.length < 6) {
+        const err = new Error('La contraseña debe tener al menos 6 caracteres')
+        err.statusCode = 400
+        throw err
+      }
+      return bcrypt.hash(datos.password, parseInt(process.env.BCRYPT_ROUNDS || 10))
+        .then(passwordHasheada => {
+          datos.password = passwordHasheada
+          return Usuario.findOneAndUpdate(
+            { usuario_id },
+            datos,
+            { returnDocument: 'after' }
+          ).exec()
+            .then(usuario => {
+              if (!usuario) {
+                const err = new Error('Usuario no encontrado')
+                err.statusCode = 404
+                throw err
+              }
+              return usuario
+            })
+        })
+    }
+
     return Usuario.findOneAndUpdate(
       { usuario_id },
       datos,

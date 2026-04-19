@@ -7,15 +7,31 @@ const productosController = {
     if (categoria) {
       // Filtrado por categoría - Consulta 9
       productoService.obtenerProductosDisponiblesPorCategoria(categoria)
-        .then(productos => {
-          res.status(200).json(productos || [])
+        .then(resultado => {
+          if ((!resultado.disponibles || resultado.disponibles.length === 0) &&
+              (!resultado.noDisponibles || resultado.noDisponibles.length === 0)) {
+            return res.status(200).json({
+              message: `No hay productos disponibles en la categoría ${categoria}`,
+              disponibles: [],
+              noDisponibles: []
+            })
+          }
+          res.status(200).json(resultado)
         })
         .catch(err => res.status(500).json({ message: `Error: ${err.message}` }))
     } else {
       // Menú completo - Consulta 1
       productoService.obtenerProductosDisponibles()
-        .then(productos => {
-          res.status(200).json(productos || [])
+        .then(resultado => {
+          if ((!resultado.disponibles || resultado.disponibles.length === 0) &&
+              (!resultado.noDisponibles || resultado.noDisponibles.length === 0)) {
+            return res.status(200).json({
+              message: 'No hay productos disponibles en el menú',
+              disponibles: [],
+              noDisponibles: []
+            })
+          }
+          res.status(200).json(resultado)
         })
         .catch(err => res.status(500).json({ message: `Error: ${err.message}` }))
     }

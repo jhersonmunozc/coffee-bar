@@ -4,12 +4,101 @@ const Ingrediente = require('../models/ingrediente')
 const Venta = require('../models/venta')
 
 const productoService = {
-  obtenerProductosDisponibles: function () {
-    return Producto.find({ disponible: true }).exec()
+  obtenerProductosDisponibles: async function () {
+      const productos = await Producto.find({ disponible: true }).exec()
+      const disponibles = []
+      const noDisponibles = []
+      
+      for (let producto of productos) {
+        const receta = await Receta.findOne({ prod_id: producto.prod_id }).exec()
+        
+        if (!receta) {
+          noDisponibles.push({
+            prod_id: producto.prod_id,
+            nombre: producto.nombre,
+            categoria: producto.categoria,
+            precio: producto.precio,
+            razon: "Sin receta definida"
+          })
+          continue
+        }
+        
+        let ingredienteBajo = null
+        for (let ingrediente of receta.ingredientes) {
+          const ing = await Ingrediente.findOne({ ing_id: ingrediente.ing_id }).exec()
+          if (!ing || ing.stock <= ing.minimo) {
+            ingredienteBajo = {
+              nombre: ing ? ing.nombre : "Desconocido",
+              stock: ing ? ing.stock : 0,
+              minimo: ing ? ing.minimo : 0
+            }
+            break
+          }
+        }
+        
+        if (ingredienteBajo) {
+          noDisponibles.push({
+            prod_id: producto.prod_id,
+            nombre: producto.nombre,
+            categoria: producto.categoria,
+            precio: producto.precio,
+            razon: `Stock bajo: ${ingredienteBajo.nombre} (${ingredienteBajo.stock}/${ingredienteBajo.minimo})`
+          })
+        } else {
+          disponibles.push(producto)
+        }
+      }
+      
+      return { disponibles, noDisponibles }
   },
 
-  obtenerProductosDisponiblesPorCategoria: function (categoria) {
-    return Producto.find({ disponible: true, categoria: categoria }).exec()
+  obtenerProductosDisponiblesPorCategoria: async function (categoria) {
+      const regex = new RegExp(`^${categoria}$`, 'i')
+      const productos = await Producto.find({ disponible: true, categoria: regex }).exec()
+      const disponibles = []
+      const noDisponibles = []
+      
+      for (let producto of productos) {
+        const receta = await Receta.findOne({ prod_id: producto.prod_id }).exec()
+        
+        if (!receta) {
+          noDisponibles.push({
+            prod_id: producto.prod_id,
+            nombre: producto.nombre,
+            categoria: producto.categoria,
+            precio: producto.precio,
+            razon: "Sin receta definida"
+          })
+          continue
+        }
+        
+        let ingredienteBajo = null
+        for (let ingrediente of receta.ingredientes) {
+          const ing = await Ingrediente.findOne({ ing_id: ingrediente.ing_id }).exec()
+          if (!ing || ing.stock <= ing.minimo) {
+            ingredienteBajo = {
+              nombre: ing ? ing.nombre : "Desconocido",
+              stock: ing ? ing.stock : 0,
+              minimo: ing ? ing.minimo : 0
+            }
+            break
+          }
+        }
+        
+        if (ingredienteBajo) {
+          noDisponibles.push({
+            prod_id: producto.prod_id,
+            nombre: producto.nombre,
+            categoria: producto.categoria,
+            precio: producto.precio,
+            razon: `Stock bajo: ${ingredienteBajo.nombre} (${ingredienteBajo.stock}/${ingredienteBajo.minimo})`
+          })
+        } else {
+          disponibles.push(producto)
+        }
+      }
+      
+      return { disponibles, noDisponibles }
   },
 
   actualizarDisponibilidad: function (prodId, disponible) {
