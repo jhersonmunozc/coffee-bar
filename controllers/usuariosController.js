@@ -2,9 +2,9 @@ const usuarioService = require('../services/usuarioService')
 
 const usuariosController = {
   crearUsuario: function (req, res) {
-    const { usuario_id, nombre, rol, email, token_jwt } = req.body
+    const { usuario_id, nombre, rol, email, password } = req.body
 
-    usuarioService.crearUsuario(usuario_id, nombre, rol, email, token_jwt)
+    usuarioService.crearUsuario(usuario_id, nombre, rol, email, password)
       .then(usuario => {
         res.status(201).json(usuario)
       })
