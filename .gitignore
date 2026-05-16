@@ -29,3 +29,6 @@ logs/
 dist/
 build/
 CAFESINO.mdc
+
+# Reglas de contexto para IA
+*.mdc

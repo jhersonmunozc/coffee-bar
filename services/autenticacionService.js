@@ -3,18 +3,20 @@ require('dotenv').config()
 
 const autenticacionService = {
   verificarToken: function (req, res, next) {
-    const token = req.headers.authorization
+    const authHeader = req.headers.authorization
 
-    if (!token) {
+    if (!authHeader) {
       return res.status(401).json({ message: 'Token requerido' })
     }
+
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader
 
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET)
       req.usuario = decoded
       next()
     } catch (err) {
-      return res.status(401).json({ message: 'Token inválido o expirado' })
+      return res.status(401).json({ message: 'Token invalido o expirado' })
     }
   },
 
