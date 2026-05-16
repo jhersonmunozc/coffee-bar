@@ -1,4 +1,5 @@
 const Ingrediente = require('../models/ingrediente')
+const Receta      = require('../models/receta')
 const productoService = require('./productoService')
 
 const inventarioService = {
@@ -114,16 +115,20 @@ const inventarioService = {
       })
   },
 
-  eliminarIngrediente: function (ing_id) {
-    return Ingrediente.findOneAndDelete({ ing_id }).exec()
-      .then(ing => {
-        if (!ing) {
-          const err = new Error('Ingrediente no encontrado')
-          err.statusCode = 404
-          throw err
-        }
-        return ing
-      })
+  eliminarIngrediente: async function (ing_id) {
+    const recetasConIng = await Receta.find({ 'ingredientes.ing_id': ing_id }).exec()
+    if (recetasConIng.length > 0) {
+      const err = new Error(`No se puede eliminar: el ingrediente esta en uso en ${recetasConIng.length} receta(s)`)
+      err.statusCode = 409
+      throw err
+    }
+    const ing = await Ingrediente.findOneAndDelete({ ing_id }).exec()
+    if (!ing) {
+      const err = new Error('Ingrediente no encontrado')
+      err.statusCode = 404
+      throw err
+    }
+    return ing
   }
 }
 
