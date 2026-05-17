@@ -20,4 +20,20 @@ router.get(
   alertasController.obtenerHistorialAlertas
 )
 
+// Marcar alerta como vista (Admin)
+router.patch(
+  '/:alert_id/marcar-visto',
+  autenticacionService.verificarToken,
+  autenticacionService.verifyAdmin,
+  alertasController.marcarVisto
+)
+
+// Eliminar alerta (Admin)
+router.delete(
+  '/:alert_id',
+  autenticacionService.verificarToken,
+  autenticacionService.verifyAdmin,
+  alertasController.eliminarAlerta
+)
+
 module.exports = router

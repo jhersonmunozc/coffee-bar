@@ -22,6 +22,21 @@ const ventasController = {
       })
   },
 
+  obtenerVentas: function (req, res) {
+    const { fecha_inicio, fecha_fin, barista_id } = req.query
+    ventaService.obtenerVentas({ fecha_inicio, fecha_fin, barista_id })
+      .then(ventas => res.status(200).json(ventas))
+      .catch(err => res.status(500).json({ message: err.message }))
+  },
+
+  obtenerMisVentas: function (req, res) {
+    const baristaId = req.usuario.usuario_id
+    const { fecha_inicio, fecha_fin } = req.query
+    ventaService.obtenerMisVentas(baristaId, { fecha_inicio, fecha_fin })
+      .then(ventas => res.status(200).json(ventas))
+      .catch(err => res.status(500).json({ message: err.message }))
+  },
+
   obtenerVentasDiarias: function (req, res) {
     ventaService.obtenerVentasDiarias()
       .then(resultado => {

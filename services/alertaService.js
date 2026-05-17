@@ -30,6 +30,18 @@ const alertaService = {
     ).exec()
   },
 
+  eliminarAlerta: function (alertId) {
+    return Alerta.findOneAndDelete({ alert_id: alertId }).exec()
+      .then(alerta => {
+        if (!alerta) {
+          const err = new Error('Alerta no encontrada')
+          err.statusCode = 404
+          throw err
+        }
+        return alerta
+      })
+  },
+
   obtenerHistorialAlertas: function (visto, limit = 50, offset = 0) {
     let query = {}
     

@@ -61,6 +61,43 @@ const ventaService = {
     }
   },
 
+  obtenerVentas: async function (filtros = {}) {
+    try {
+      const query = {}
+      if (filtros.fecha_inicio || filtros.fecha_fin) {
+        query.fecha = {}
+        if (filtros.fecha_inicio) query.fecha.$gte = new Date(filtros.fecha_inicio)
+        if (filtros.fecha_fin) {
+          const fin = new Date(filtros.fecha_fin)
+          fin.setHours(23, 59, 59, 999)
+          query.fecha.$lte = fin
+        }
+      }
+      if (filtros.barista_id) query.barista_id = filtros.barista_id
+      return Venta.find(query).sort({ fecha: -1 }).limit(200).exec()
+    } catch (err) {
+      throw err
+    }
+  },
+
+  obtenerMisVentas: async function (baristaId, filtros = {}) {
+    try {
+      const query = { barista_id: baristaId }
+      if (filtros.fecha_inicio || filtros.fecha_fin) {
+        query.fecha = {}
+        if (filtros.fecha_inicio) query.fecha.$gte = new Date(filtros.fecha_inicio)
+        if (filtros.fecha_fin) {
+          const fin = new Date(filtros.fecha_fin)
+          fin.setHours(23, 59, 59, 999)
+          query.fecha.$lte = fin
+        }
+      }
+      return Venta.find(query).sort({ fecha: -1 }).exec()
+    } catch (err) {
+      throw err
+    }
+  },
+
   obtenerVentasDiarias: async function () {
     try {
       const hoy = new Date()
